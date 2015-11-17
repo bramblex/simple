@@ -71,7 +71,7 @@
       )
     });
     return NewStruct;
-  }
+  };
 
   var Number = Struct('Number', ['value'])
     .method('to_s', function(){

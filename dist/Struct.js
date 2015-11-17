@@ -77,7 +77,7 @@
       .method('render', function(str){
         return Utils.render(
           str, this,
-          function(i){return Utils.inspect(i);}
+          function(i){return Utils.inspect(i)}
         )
       });
 

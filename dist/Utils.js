@@ -142,7 +142,7 @@
         return obj.toString();
       }
       else if (obj instanceof Array){
-        if (depth <= 0){
+        if (depth < 0){
           return '[Array]';
         }
         else if (obj.length <= 0){
@@ -160,7 +160,7 @@
         }
       }
       else{
-        if (depth <= 0){
+        if (depth < 0){
           return '[Object]';
         }
         else {
@@ -247,7 +247,14 @@
       'for (this.__inject_key__ in <%name%>){ eval("var "+this.__inject_key__+"="+"<%name%>"+"."+this.__inject_key__)}; delete this.__inject_key__;'
       ,{name: name}
     );
-  }
+  };
+
+  Utils.uniqueId = (function(){
+    var count = 0;
+    return function uniqueId(){
+      return count++;
+    }
+  })();
 
   return Utils;
 });
