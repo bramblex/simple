@@ -26,10 +26,11 @@
     }
   };
 
-  define(['./Class', './Struct', './Set'], function(Class, Struct, Set){
+  define(['./Class', './Struct', './Set', './DFA', './Utils'], function(Class, Struct, Set, DFAScope, Utils){
+
+  eval(Utils.importScope('DFAScope'));
 
   var epsilon = null;
-
   var FARule = Struct('FARule', ['state', 'character', 'next_state'])
     .method('is_applies_to', function(state, character){
       return this.state === state && this.character === character;
@@ -149,6 +150,32 @@
       }
     })
     .method('to_dfa_design', function(){
+      var start_state = this.nfa_design.to_nfa().current_states();
+      var tmp = this.discover_states_and_rules(Set([start_state]));
+      var states = tmp[0];
+      var rules = tmp[1];
+      var _this = this;
+      var accept_states = states.filter(function(state){
+        return _this.nfa_design.to_nfa(state).is_accepting();
+      });
+
+      var nu = (function(){
+        var content = {};
+        return function nu(set){
+          var key = set.join('_') || '_';
+          if (typeof content[key] === 'undefined')
+            content[key] = Utils.uniqueId();
+          return content[key];
+        };
+      })();
+
+      start_state = nu(start_state);
+      accept_states = accept_states.map(nu);
+      rules = rules.map(function(rule){
+        return FARule(nu(rule.state), rule.character, nu(rule.next_state));
+      });
+
+      return DFADesign(start_state, accept_states, DFARulebook(rules));
     });
 
   return {
