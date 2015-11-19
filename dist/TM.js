@@ -29,36 +29,40 @@
   define(['./Struct', './Utils'], function(Struct, Utils){
   eval(Utils.importScope('Utils'));
 
-  var Stack = Struct('Stack', {'contents': []})
-    .method('push', function(character){
-      return Stack(this.contents.concat([character]));
-    })
-    .method('pop', function(){
-      return Stack(this.contents.slice(0,-1))
-    })
-    .method('top', function(){
-      return this.contents[this.contents.length-1];
-    })
-    .method('size', function(){
-      return this.contents.length();
-    })
+  var Tape = Struct('Tape', {left: [], middle: '_', right: [], blank: '_'})
     .method('inspect', '*', function(){
       return render(
-        '#<Stack <%contents%><%top%>>',
-        {contents: this.contents.slice(0,-1).join(''),
-          top: color('red', this.top())}
+        '#<Tape <%left%>(<%middle%>)<%right%>>',
+        {left: this.left.join(''), middle: this.middle, right: this.right.join('')}
       );
     })
-    .method('equal', function(other_stack){
-      if (!(other_stack instanceof Stack)){
-        return false;
-      }
-      else {
-        return equal(this.contents, other_stack.contents);
-      }
+    .method('write', function(character){
+      return Tape(this.left, character, this.right, this.blank);
+    })
+    .method('move_head_left', function(){
+      return Tape(
+        this.left.slice(0, -1),
+        this.left[this.left.length-1] || this.blank,
+        [this.middle].concat(this.right),
+        this.blank
+      );
+    })
+    .method('move_head_right', function(){
+      return Tape(
+        this.left.concat([this.middle]),
+        this.right[0] || this.blank,
+        this.right.slice(1),
+        this.blank
+      );
     });
 
-  return Stack;
+  var TMConfiguration = Struct('TMConfiguration', ['state', 'tape']);
+
+  var TMRule = Struct('TMRule', ['state', 'character', 'next_state', 'write_character', 'direction'])
+
+  return {
+    Tape: Tape
+  }
 });
 
 

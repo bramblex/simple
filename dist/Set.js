@@ -52,7 +52,7 @@
     })
     .method('remove', function(item){
       if (this.has(item)){
-        return Set(this.filter(function(i){return i !== item}));
+        return Set(this.filter(function(i){return Utils.equal(i, item)}));
       }
       else {
         return Set(this);

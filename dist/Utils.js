@@ -161,7 +161,7 @@
             return inspect(item, depth-1);
           });
           var content_str = content.join(',\n');
-          if (content_str.length < 60){
+          if (content_str.length < 80){
             content_str = content.join(', ');
           }
           return '[ ' + indent.skipFirstLine(2, content_str) +' ]';
@@ -187,7 +187,7 @@
               return  key_str + ': ' + inspect(obj[key], depth-1);
             });
             var content_str = content.join(',\n');
-            if (content_str.length < 60){
+            if (content_str.length < 80){
               content_str = content.join(', ');
             }
             return '{ ' + indent.skipFirstLine(2, content_str) +' }';
@@ -263,6 +263,15 @@
       return count++;
     }
   })();
+
+  Utils.uniqueId.own = function(){
+    return (function(){
+      var count = 0;
+      return function uniqueId(){
+        return count++;
+      }
+    })()
+  };
 
   Utils.equal = function equal(a, b){
     return (

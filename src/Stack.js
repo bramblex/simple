@@ -1,4 +1,5 @@
 define(['./Struct', './Utils'], function(Struct, Utils){
+  eval(Utils.importScope('Utils'));
 
   var Stack = Struct('Stack', {'contents': []})
     .method('push', function(character){
@@ -14,9 +15,10 @@ define(['./Struct', './Utils'], function(Struct, Utils){
       return this.contents.length();
     })
     .method('inspect', '*', function(){
-      return Utils.render(
-        '#<Stack <%contents%>(<%top%>)>',
-        {contents: this.contents.slice(0,-1).join(''), top: this.top()}
+      return render(
+        '#<Stack <%contents%><%top%>>',
+        {contents: this.contents.slice(0,-1).join(''),
+          top: color('red', this.top())}
       );
     })
     .method('equal', function(other_stack){
@@ -24,7 +26,7 @@ define(['./Struct', './Utils'], function(Struct, Utils){
         return false;
       }
       else {
-        return Utils.equal(this.contents, other_stack.contents);
+        return equal(this.contents, other_stack.contents);
       }
     });
 

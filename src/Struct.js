@@ -35,7 +35,7 @@ define(['./Class', './Utils'], function(Class, Utils){
         });
         
         var result_str = '#<Struct '+name+'\n'+indent(2, content.join(',\n'))+'>';
-        if (result_str.length < 60){
+        if (result_str.length < 80){
           result_str = '#<Struct '+name+' '+content.join(', ')+'>';
         }
         return result_str;
