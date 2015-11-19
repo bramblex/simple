@@ -1,12 +1,28 @@
 define(['./Class', './Utils'], function(Class, Utils){
 
+  eval(Utils.importScope('Utils'));
+
   var Struct = Class('Struct');
-  var indent = Utils.indent;
-  var inspect = Utils.inspect;
 
   return function(name, values){
-    var values = values.slice();
     var NewStruct = Struct.extend(name)
+
+    if (!(values instanceof Array)){
+      var values_init = slice(values);
+      var values = values_init.map(function(e){return e[0]});
+      NewStruct
+        .method('constructor', function(){
+          var _this = this;
+          values_init.map(function(kv){
+            _this[kv[0]] = kv[1];
+          });
+        });
+    }
+    else{
+      var values = values.slice();
+    }
+
+    NewStruct
       .method('constructor', values.length, function(){
         for (var i=0, l=values.length; i<l; i++){
           this[values[i]] = arguments[i];
@@ -18,7 +34,7 @@ define(['./Class', './Utils'], function(Class, Utils){
           return key + '=' + inspect(this_struct[key]);
         });
         
-        var result_str = '#<Struct '+name+'\n'+indent(2, content.join(',\n'))+'\n>';
+        var result_str = '#<Struct '+name+'\n'+indent(2, content.join(',\n'))+'>';
         if (result_str.length < 60){
           result_str = '#<Struct '+name+' '+content.join(', ')+'>';
         }
@@ -31,25 +47,16 @@ define(['./Class', './Utils'], function(Class, Utils){
           return false;
         }
         else {
-          for (var i=0,l=values.length; i<l; i++){
-            var this_value = this[values[i]];
-            var other_struct_value = other_struct[values[i]];
-            if (this_value instanceof Struct && other_struct_value instanceof Struct){
-              if (!this_value.equal(other_struct))
-                return false;
-            }
-            else{
-              if (this_value !== other_struct_value)
-                return false;
-            }
-          };
+          var _this = this;
+          return values.reduce(function(last, key){
+            return last && equal(_this[key], other_struct[key]);
+          }, true);
         }
-        return true;
       })
       .method('render', function(str){
-        return Utils.render(
+        return render(
           str, this,
-          function(i){return Utils.inspect(i)}
+          function(i){return inspect(i)}
         )
       });
 

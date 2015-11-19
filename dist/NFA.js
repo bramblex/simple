@@ -26,21 +26,11 @@
     }
   };
 
-  define(['./Class', './Struct', './Set', './DFA', './Utils'], function(Class, Struct, Set, DFAScope, Utils){
+  define(['./Class', './Struct', './Set', './DFA', './Utils', './FARule'], function(Class, Struct, Set, DFAScope, Utils, FARule){
 
   eval(Utils.importScope('DFAScope'));
 
   var epsilon = null;
-  var FARule = Struct('FARule', ['state', 'character', 'next_state'])
-    .method('is_applies_to', function(state, character){
-      return this.state === state && this.character === character;
-    })
-    .method('follow', function(){
-      return this.next_state;
-    })
-    .method('inspect', '*', function(){
-      return this.render('<%state%> -<%character%>-> <%next_state%>');
-    })
 
   var NFARuleBook = Struct('NFARuleBook', ['rules'])
     .method('next_states', function(states, character){
@@ -106,10 +96,10 @@
       return this;
     })
     .method('read_string', function(string){
-      for (var i=0,l=string.length; i<l; i++){
-        var character = string[i];
-        this.read_character(character);
-      }
+      var _this = this;
+      sliceStr(string).forEach(function(character){
+        _this.read_character(character);
+      });
       return this;
     });
 
@@ -158,23 +148,6 @@
       var accept_states = states.filter(function(state){
         return _this.nfa_design.to_nfa(state).is_accepting();
       });
-
-      var nu = (function(){
-        var content = {};
-        return function nu(set){
-          var key = set.join('_') || '_';
-          if (typeof content[key] === 'undefined')
-            content[key] = Utils.uniqueId();
-          return content[key];
-        };
-      })();
-
-      start_state = nu(start_state);
-      accept_states = accept_states.map(nu);
-      rules = rules.map(function(rule){
-        return FARule(nu(rule.state), rule.character, nu(rule.next_state));
-      });
-
       return DFADesign(start_state, accept_states, DFARulebook(rules));
     });
 

@@ -97,6 +97,14 @@
 
   })(); 
 
+  Utils.slice = function slice(obj){
+    return Utils.attrs(obj).self.map(function(key){return [key, obj[key]]});
+  };
+
+  Utils.sliceStr = function(string){
+    return Array.prototype.slice.call(string);
+  };
+
   Utils.render = function render(template, values, hook){
     var hook = hook || function(i){return i};
     return template.split('%>').map(function(piece){
@@ -255,6 +263,27 @@
       return count++;
     }
   })();
+
+  Utils.equal = function equal(a, b){
+    return (
+      (typeof a === typeof b) && (
+        (a === b) || (
+          (typeof a.equal === 'function') 
+          && (!!(a.equal(b)))
+        ) || (
+          (a instanceof Array) && (b instanceof Array) && (Utils.equal.array(a, b))
+        )
+      )
+    );
+  };
+
+  Utils.equal.array = function equalArray(a, b){
+    return a.map(function(e, i){
+      return [e, b[i]];
+    }).reduce(function(last, item){
+      return last && Utils.equal(item[0], item[1]);
+    }, a.length === b.length);
+  };
 
   return Utils;
 });

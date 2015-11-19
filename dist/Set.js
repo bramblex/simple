@@ -29,7 +29,6 @@
   define(['./Class', './Utils'], function(Class, Utils){
 
   var Set = Class('Set', Array)
-    .method('constructor', function(){})
     .method('constructor', function(array){
       var this_set = this;
       array.forEach(function(item){
@@ -40,7 +39,7 @@
     })
     .method('has', function(other_item){
       return this.reduce(function(last, item){
-        return last || (other_item === item) || (item && item.equal && item.equal(other_item));
+        return last || Utils.equal(item, other_item);
       }, false);
     })
     .method('add', function(item){
@@ -66,24 +65,9 @@
       if (!(other_set instanceof Set)){
         return false;
       }
-      else if (this.size() !== other_set.size()){
-        return false;
+      else {
+        return Utils.equal.array(this.slice().sort(), other_set.slice().sort());
       }
-      else{
-        var this_set = this.slice().sort();
-        var other_set = other_set.slice().sort();
-        for (var i=0,l=this.size(); i<l; i++){
-          if (typeof this_set[i].equal === 'function'){
-            if (!this_set[i].equal(other_set[i])){
-              return false;
-            }
-          }
-          else if (this_set[i] !== other_set[i]){
-            return false;
-          }
-        }
-      }
-      return true;
     })
     .method('is_subset', function(set){
       if (set.size() < this.size()){

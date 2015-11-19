@@ -20,4 +20,3 @@ var dfa_design = simulation.to_dfa_design();
 
 console.log(dfa_design);
 console.log(dfa_design.is_accepts('bbbabb'));
-

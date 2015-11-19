@@ -26,18 +26,9 @@
     }
   };
 
-  define(['./Class', './Struct'], function(Class, Struct){
+  define(['./Class', './Struct', './FARule', './Utils'], function(Class, Struct, FARule, Utils){
 
-  var FARule = Struct('FARule', ['state', 'character', 'next_state'])
-    .method('is_applies_to', function(state, character){
-      return this.state === state && this.character === character;
-    })
-    .method('follow', function(){
-      return this.next_state;
-    })
-    .method('inspect', '*', function(){
-      return this.render('<%state%> -<%character%>-> <%next_state%>');
-    })
+  eval(Utils.importScope('Utils'));
 
   var DFARulebook = Struct('DFARulebook', ['rules'])
     .method('next_state', function(state, character){
@@ -54,17 +45,20 @@
 
   var DFA = Struct('DFA', ['current_state', 'accept_states', 'rulebook'])
     .method('is_accepting', function(){
-      return this.accept_states.indexOf(this.current_state) >= 0;
+      var _this = this;
+      return this.accept_states.reduce(function(last, state){
+        return last || equal(_this.current_state, state);
+      }, false);
     })
     .method('read_character', function(character){
       this.current_state = this.rulebook.next_state(this.current_state, character);
       return this;
     })
     .method('read_string', function(string){
-      for (var i=0,l=string.length; i<l; i++){
-        var character = string[i];
-        this.read_character(character);
-      }
+      var _this = this;
+      sliceStr(string).forEach(function(character){
+        _this.read_character(character);
+      });
       return this;
     });
 
