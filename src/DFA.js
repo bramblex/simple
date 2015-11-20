@@ -7,12 +7,9 @@ define(['./Class', './Struct', './FARule', './Utils'], function(Class, Struct, F
       return this.rule_for(state, character).follow();
     })
     .method('rule_for', function(state, character){
-      for (var i=0, l=this.rules.length; i<l; i++){
-        if(this.rules[i].is_applies_to(state, character)){
-          return this.rules[i];
-        }
-      }
-      throw Error();
+      return this.rules.reduce(function(last, rule){
+        return last || (rule.is_applies_to(state, character) && rule || null )
+      }, null);
     });
 
   var DFA = Struct('DFA', ['current_state', 'accept_states', 'rulebook'])

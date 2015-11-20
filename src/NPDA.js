@@ -3,7 +3,7 @@ define(['./Struct', './PDA', './Utils', './Stack', './Set'], function(Struct, PD
   eval(Utils.importScope('PDAScope'));
   eval(Utils.importScope('Utils'));
 
-  var NPDARuleBook = Struct('NPDARuleBook', ['rules'])
+  var NPDARulebook = Struct('NPDARulebook', ['rules'])
     .method('next_configurations', function(configurations, character){
       var _this = this;
       return Set(
@@ -74,7 +74,7 @@ define(['./Struct', './PDA', './Utils', './Stack', './Set'], function(Struct, PD
   return {
     PDAConfiguration: PDAConfiguration,
     PDARule: PDARule,
-    NPDARuleBook: NPDARuleBook,
+    NPDARulebook: NPDARulebook,
     NPDA: NPDA,
     NPDADesign: NPDADesign,
     epsilon: epsilon,

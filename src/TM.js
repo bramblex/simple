@@ -31,8 +31,60 @@ define(['./Struct', './Utils'], function(Struct, Utils){
   var TMConfiguration = Struct('TMConfiguration', ['state', 'tape']);
 
   var TMRule = Struct('TMRule', ['state', 'character', 'next_state', 'write_character', 'direction'])
+    .method('is_applies_to', function(configuration){
+      return equal(this.state, configuration.state)
+      && equal(this.character, configuration.tape.middle)
+    })
+    .method('follow', function(configuration){
+      return TMConfiguration(this.next_state, this.next_tap(configuration));
+    })
+    .method('next_tap', function(configuration){
+      var written_tape = configuration.tape.write(this.write_character);
+      switch (this.direction){
+        case 'left':
+          return written_tape.move_head_left();
+        case 'right':
+          return written_tape.move_head_right();
+      }
+    });
+
+  var DTMRulebook = Struct('DTMRulebook', ['rules'])
+    .method('next_configuration', function(configuration){
+      return this.rule_for(configuration).follow(configuration);
+    })
+    .method('rule_for', function(configuration){
+      return this.rules.reduce(function(last, rule){
+        return last || (rule.is_applies_to(configuration) && rule || null )
+      }, null);
+    })
+    .method('is_applies_to', function(configuration){
+      return !!this.rule_for(configuration);
+    });
+
+  var DTM = Struct('DTM', ['current_configuration', 'accept_states', 'rulebook'])
+    .method('is_accepting', function(){
+      var _this = this;
+      return this.accept_states.reduce(function(last, state){
+        return last || equal(_this.current_configuration.state, state)
+      }, false);
+    })
+    .method('step', function(){
+      this.current_configuration = this.rulebook.next_configuration(this.current_configuration);
+    })
+    .method('is_stuck', function(){
+      return !this.is_accepting() && !this.rulebook.is_applies_to(this.current_configuration);
+    })
+    .method('run', function(){
+      while (!this.is_accepting() && !this.is_stuck()){
+        this.step();
+      }
+    });
 
   return {
-    Tape: Tape
+    Tape: Tape,
+    TMConfiguration: TMConfiguration,
+    TMRule: TMRule,
+    DTMRulebook: DTMRulebook,
+    DTM: DTM,
   }
 });

@@ -5,7 +5,7 @@ var Utils = require('./dist/Utils');
 
 eval(Utils.importScope('NFAScope'));
 
-var rulebook = NFARuleBook([
+var rulebook = NFARulebook([
   FARule(1, 'a', 1), FARule(1, epsilon, 2), FARule(1, 'a', 2), 
   FARule(2, 'b', 3), 
   FARule(3, 'b', 1), FARule(3, epsilon, 2),

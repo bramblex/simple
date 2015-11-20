@@ -1,10 +1,53 @@
 
 var NPDAScope = require('./dist/NPDA');
+var Struct = require('./dist/Struct');
 var Stack = require('./dist/Stack');
 var Set = require('./dist/Set');
 var Utils = require('./dist/Utils');
 eval(Utils.importScope('NPDAScope'));
 eval(Utils.importScope('Utils'));
+
+var STUCK_STATE = {};
+
+var PDAConfiguration = Struct('PDAConfiguration', ['state', 'stack', 'op_sequence'])
+  .method('stuck', function(){
+    return PDAConfiguration(STUCK_STATE, this.stack, this.op_sequence);
+  })
+  .method('is_stuck', function(){
+    return equal(this.state, STUCK_STATE);
+  })
+  .method('equal', function(other){
+    this.op_sequence.equal = function(){return true};
+    return NPDAScope.PDAConfiguration.prototype.equal.call(this, other);
+  });
+
+var PDARule = Struct('PDARule', ['state', 'character', 'next_state', 'pop_character', 'push_characters'])
+  .method('is_applies_to', function(configuration, character){
+    return equal(this.state, configuration.state) &&
+      equal(this.pop_character, configuration.stack.top()) &&
+      equal(this.character, character);
+  })
+  .method('follow', function(configuration){
+    //return PDAConfiguration(this.next_state, this.next_stack(configuration), configuration.pushed_sequence.concat(this.push_characters.slice().reverse()));
+    //return this
+    //configuration.op_sequence.configuration
+    var popped_stack = configuration.stack.pop();
+    var popped_item = configuration.stack.top();
+    var op_sequence = configuration.op_sequence
+      .concat([['pop', popped_item]]);
+    var pushed_stack = this.push_characters.reduceRight(function(stack, character){
+      op_sequence = op_sequence.concat([['push', character]]);
+      return stack.push(character);
+    }, popped_stack);
+    return PDAConfiguration(this.next_state, pushed_stack, op_sequence);
+  });
+
+NPDADesign
+  .method('to_npda', function(){
+    var start_stack = Stack([this.bottom_charachter]);
+    var start_configuration = PDAConfiguration(this.start_state, start_stack, []);
+    return NPDA(Set([start_configuration]), this.accept_states, this.rulebook);
+  });
 
 var uniqueId = uniqueId.own();
 var csym = {};
@@ -43,16 +86,18 @@ var stop_rules = [PDARule(2, epsilon, 3, sym['$'], [sym['$']])];
 var rulebook = [start_rules, symbol_rules, token_rules, epsilon_rules, stop_rules].reduce(function(a,b){return a.concat(b)});
 
 //console.log(rulebook);
-var npda_design = NPDADesign(1, sym['$'], [3], NPDARuleBook(rulebook));
+var npda_design = NPDADesign(1, sym['$'], [3], NPDARulebook(rulebook));
 var npda = npda_design.to_npda();
 
 var logConfig = function logConfig(config){
   return render(
-    '<%state%> | <%stack%> <%top%>',
+    //'state: <%state%> | stack: <%stack%> <%top%>\naccpeted: <%accpeted%>',
+    'state: <%state%> | stack: <%stack%> <%top%>',
     {
       state: color('cyan', config.state),
       stack: config.stack.contents.slice(0,-1).map(function(i){return csym[i]}).join(' '),
-      top: color('red', csym[config.stack.contents[config.stack.contents.length-1]])
+      top: color('red', csym[config.stack.contents[config.stack.contents.length-1]]),
+      //accpeted: config.op_sequence.map(function(i){return i[0]+':'+csym[i[1]]}).join(' ')
     }
   );
 };
@@ -68,7 +113,7 @@ var printState = function printState(npda){
 }
 
 printState(npda);
-sliceStr('').map(function(t){return sym[t]}).forEach(function(c){
+sliceStr('ccccccccc').map(function(t){return sym[t]}).forEach(function(c){
   console.log();
   console.log('input:', csym[c]);
   npda.read_character(c);

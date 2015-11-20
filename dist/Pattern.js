@@ -66,7 +66,7 @@
     .method('to_nfa_design', function(){
       var start_state = Utils.uniqueId();
       var accept_states = [start_state];
-      var rulebook = NFARuleBook([]);
+      var rulebook = NFARulebook([]);
       return NFADesign(start_state, accept_states, rulebook);
     });
 
@@ -80,7 +80,7 @@
     .method('to_nfa_design', function(){
       var start_state = Utils.uniqueId();
       var accept_state = Utils.uniqueId();
-      var rulebook = NFARuleBook([
+      var rulebook = NFARulebook([
         FARule(start_state, this.character, accept_state)
       ]);
       return NFADesign(start_state, [accept_state], rulebook);
@@ -105,7 +105,7 @@
       var extra_rules = first_nfa_design.accept_states.map(function(state){
         return FARule(state, epsilon, second_nfa_design.start_state);
       });
-      var rulebook = NFARuleBook(rules.concat(extra_rules));
+      var rulebook = NFARulebook(rules.concat(extra_rules));
       return NFADesign(start_state, accept_states, rulebook);
     });
 
@@ -131,7 +131,7 @@
         .map(function(nfa_design){
           return FARule(start_state, epsilon, nfa_design.start_state);
         });
-      var rulebook = NFARuleBook(rules.concat(extra_rules));
+      var rulebook = NFARulebook(rules.concat(extra_rules));
       return NFADesign(start_state, accept_states, rulebook);
     });
 
@@ -154,7 +154,7 @@
           return FARule(accept_state, epsilon, pattern_design.start_state);
         })
         .concat([FARule(start_state, epsilon, pattern_design.start_state)]);
-      var rulebook = NFARuleBook(rules.concat(extra_rules));
+      var rulebook = NFARulebook(rules.concat(extra_rules));
       return NFADesign(start_state, accept_states, rulebook);
     });
 

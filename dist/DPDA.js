@@ -31,16 +31,14 @@
   eval(Utils.importScope('PDAScope'));
   eval(Utils.importScope('Utils'));
 
-  var DPDARuleBook = Struct('DPDARuleBook', ['rules'])
+  var DPDARulebook = Struct('DPDARulebook', ['rules'])
     .method('next_configuration', function(configuration, character){
       return this.rule_for(configuration, character).follow(configuration);
     })
     .method('rule_for', function(configuration, character){
-      for (var i=0, l=this.rules.length; i<l; i++){
-        if(this.rules[i].is_applies_to(configuration, character)){
-          return this.rules[i];
-        }
-      }
+      return this.rules.reduce(function(last, rule){
+        return last || (rule.is_applies_to(configuration, character) && rule || null )
+      }, null);
     })
     .method('is_applies_to', function(configuration, character){
       return !!(this.rule_for(configuration, character));
@@ -107,7 +105,7 @@
   return {
     PDAConfiguration: PDAConfiguration,
     PDARule: PDARule,
-    DPDARuleBook: DPDARuleBook,
+    DPDARulebook: DPDARulebook,
     DPDA: DPDA,
     DPDADesign: DPDADesign,
     epsilon: epsilon,

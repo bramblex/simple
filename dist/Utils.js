@@ -294,6 +294,47 @@
     }, a.length === b.length);
   };
 
+  Utils.range = function range(start, end, step){
+    var result = [];
+    for(var step=step||1;start<=end;start=start+step){
+      result.push(start);
+    }
+    return result;
+  };
+
+  Utils.print = function print(){
+    return console.log.apply(console, arguments);
+  };
+
+  Utils.uncurry =function($func){
+    return (function(func){
+      if (typeof func !== 'function'){
+        throw Error('Argument must be a function!');
+      }
+      var func_str = func.toString();
+      var regex = /^function\s*([\w\d_]*|\s*)\s*\(([\w\d\s_,]+)\)\s*{([\s\S]*)}$/; 
+      var matched = func_str.match(regex);
+      if (!matched){
+        throw Error('Curry function at last has only one arguemnt!');
+      }
+      var name = matched[1];
+      var args = matched[2].split(',').map(function(i){return i.trim()});
+      var body = matched[3];
+      var target_func_str = body;
+      for (var i=args.length-1; i>=0; i--){
+        if (i === 0){
+          target_func_str = 
+            '(function(' + args[i]  + '){' + target_func_str + '});';
+        }
+        else {
+          target_func_str = 
+            'return function(' + args[i]  + '){' + target_func_str + '}';
+        }
+      }
+      return target_func_str;
+    })($func);
+  }; 
+
   return Utils;
 });
 

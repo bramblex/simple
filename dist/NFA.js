@@ -32,7 +32,7 @@
 
   var epsilon = null;
 
-  var NFARuleBook = Struct('NFARuleBook', ['rules'])
+  var NFARulebook = Struct('NFARulebook', ['rules'])
     .method('next_states', function(states, character){
       var this_book = this;
       return Set(states.reduce(function(last, state){
@@ -154,7 +154,7 @@
   return {
     epsilon: epsilon,
     FARule: FARule,
-    NFARuleBook: NFARuleBook,
+    NFARulebook: NFARulebook,
     NFA: NFA,
     NFADesign: NFADesign,
     NFASimulation: NFASimulation,
