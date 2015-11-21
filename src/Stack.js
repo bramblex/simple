@@ -12,7 +12,7 @@ define(['./Struct', './Utils'], function(Struct, Utils){
       return this.contents[this.contents.length-1];
     })
     .method('size', function(){
-      return this.contents.length();
+      return this.contents.length;
     })
     .method('inspect', '*', function(){
       return render(

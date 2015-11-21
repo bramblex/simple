@@ -42,6 +42,26 @@ var PDARule = Struct('PDARule', ['state', 'character', 'next_state', 'pop_charac
     return PDAConfiguration(this.next_state, pushed_stack, op_sequence);
   });
 
+NPDA
+  .method('get_accpeted_configurations', function(){
+    var _this = this;
+    return Set(this.accept_states.reduce(function(last, state){
+      return last.concat(_this.current_configurations().reduce(function(last, config){
+        return last.concat( config.stack.size() <= 2 && config || []);
+      }, []));
+    }, []));
+  })
+  .method('read_character', function(character){
+    this.current_configurations(
+      this.rulebook.next_configurations(this.current_configurations(), character)
+    );
+    var accepted_configurations = this.get_accpeted_configurations();
+    if (accepted_configurations.size() > 0){
+      this.current_configurations(accepted_configurations);
+    }
+    return this;
+  });
+
 NPDADesign
   .method('to_npda', function(){
     var start_stack = Stack([this.bottom_charachter]);
@@ -113,7 +133,7 @@ var printState = function printState(npda){
 }
 
 printState(npda);
-sliceStr('ccccccccc').map(function(t){return sym[t]}).forEach(function(c){
+sliceStr('cccc(cccccccccc)ccccccccccc').map(function(t){return sym[t]}).forEach(function(c){
   console.log();
   console.log('input:', csym[c]);
   npda.read_character(c);
