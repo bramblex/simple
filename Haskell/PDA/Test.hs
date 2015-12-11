@@ -13,7 +13,7 @@ runTestComp :: TestComp a -> ((a, Output), Output)
 runTestComp = runWriter . runWriterT . unTestComp
 
 test :: TestComp ()
-test = TestComp $ do 
+test = TestComp $ do
     tell "aaa"
     tell "bbb"
     tell "ccc"
