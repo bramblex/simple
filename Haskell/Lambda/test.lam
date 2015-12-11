@@ -1,0 +1,26 @@
+
+true = \x.\y.x
+false = \x.\y.y
+
+if = \b.\x.\y.b x y 
+
+zero = \f.\s.s
+one = \f.\s.f s
+two = \f.\s.f (f s)
+three = \f.\s.f (f (f s))
+five = add two three
+
+succ = \n.\f.\s.f (n f s)
+add = \n.\m.n succ m
+mult = \m.\n.n (add m)
+
+pred = \n.\f.\x. n (\g.\h. h (g f)) (\u. x) (\u. u)
+
+isZero = \n.n (\x.false) true
+
+Y = \f.(\x.f (x x)) (\x.f (x x))
+
+fact = Y (\f.\n.if (isZero n) (one) (mult n (f (pred n))))
+
+main = id id
+id = \x.x
