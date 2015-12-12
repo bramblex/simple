@@ -1,25 +1,23 @@
 
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
+
 module Stack where
-import Control.Monad.State
 
-newtype Stack s a = Stack {unStack::(State [s] a)}
-    deriving(Functor, Applicative, Monad, MonadState [s])
+newtype Stack a = Stack {unStack::[a]}
+    deriving(Eq, Show, Read)
 
-evalStack :: [s] -> Stack s a -> a
-evalStack stack = flip evalState stack . unStack
+class StackClass t a where
+    fromList :: [a] -> t a
+    toList :: t a -> [a]
 
-execStack :: [s] -> Stack s a -> [s]
-execStack stack = flip execState stack . unStack
+    top :: t a -> a
+    top = head . toList
+    pop :: t a -> t a
+    pop = fromList . tail . toList
+    push :: a -> t a -> t a
+    push n = fromList . (n:) . toList
 
-runStack :: [s] -> Stack s a -> (a, [s])
-runStack stack = flip runState stack . unStack
-
-top :: Stack a a
-top = gets head
-
-pop :: Stack s ()
-pop = modify tail
-
-push :: s -> Stack s ()
-push n = modify (n:)
+instance StackClass Stack a where
+    fromList l = Stack l
+    toList = unStack
