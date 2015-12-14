@@ -19,12 +19,23 @@ evalComp :: Comp Expr
 evalComp = do
     (expr, env) <- ask
     tell [expr]
-    case reducible expr of
+    case reducible expr env of
         False -> return expr
         True -> local (const $ reduce expr env) evalComp
 
+evalCompImmediately :: Comp Expr
+evalCompImmediately = do
+    (expr, env) <- ask
+    tell [expr]
+    case reducibleImmediately expr env of
+        False -> return expr
+        True -> local (const $ reduceImmediately expr env) evalCompImmediately
+
 runMachine :: Configuration -> (Expr, Output)
 runMachine = runWriter . runReaderT (unComp evalComp)
+
+runMachineImmediately :: Configuration -> (Expr, Output)
+runMachineImmediately = runWriter . runReaderT (unComp evalCompImmediately)
 
 bindEnv :: Program -> Env Expr
 bindEnv = foldl bind' emptyEnv
@@ -46,4 +57,6 @@ main = do
     putStrLn "Main: "
     let (expr, output) = runProgram env 
     mapM_ (putStrLn . ("  main = "++) . show) $ output
+    let (expr_final, output) = runMachineImmediately (expr, env)
+    mapM_ (putStrLn . ("  main = "++) . show) $ tail output
 

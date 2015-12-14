@@ -1,6 +1,9 @@
 
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Lambda where
+
+import Data.Char
+
 import Environment
 import Template
 
@@ -13,8 +16,23 @@ data Binding = Binding String Expr
 type Program = [Binding]
 
 class Reducible a where
-    reducible :: a -> Bool
+    reducible :: a -> Env a -> Bool
+    reducible = reducibleLazy
+
+    reducibleLazy :: a -> Env a -> Bool
+    reducibleLazy = reducible
+
+    reducibleImmediately:: a -> Env a -> Bool
+    reducibleImmediately = reducible
+
     reduce :: a -> Env a -> (a, Env a)
+    reduce = reduceLazy
+
+    reduceLazy :: a -> Env a -> (a, Env a)
+    reduceLazy = reduce
+
+    reduceImmediately :: a -> Env a -> (a, Env a)
+    reduceImmediately = reduce
 
 class Callable a where
     callable :: a -> Bool
@@ -26,22 +44,48 @@ instance Callable Expr where
 
     replace self@(Var v) name expr = 
         if v == name then expr else self
+    replace self@(Lam v e) name expr@(Var var_name) = 
+        let new_name = v ++ "'"
+        in if v == var_name
+           then replace (Lam new_name (replace e v (Var new_name))) name expr
+           else Lam v (replace e name expr)
     replace self@(Lam v e) name expr =
-        if v == name then self else Lam v (replace e name expr)
+        if v == name 
+        then self
+        else Lam v (replace e name expr)
+
     replace self@(App e1 e2) name expr =
         App (replace e1 name expr) (replace e2 name expr)
 
 instance Reducible Expr where
-    reducible (App e1 e2) = (reducible e1) || (callable e1)
-    reducible (Var _) = True
-    reducible _ = False
+    reducibleLazy (App e1 e2) env = (reducibleLazy e1 env) || (callable e1)
+    reducibleLazy (Var name) env = not (isBound name env) && inEnv name env
+    reducibleLazy _ _ = False
 
-    reduce (App e1 e2) env 
-        | reducible e1 = (App (fst $ reduce e1 env) e2, env)
-        {-| reducible e2 = (App e1 (fst $ reduce e2 env), env)-}
+    reduceLazy (App e1 e2) env 
+        | reducibleLazy e1 env = (App (fst $ reduceLazy e1 env) e2, env)
+        {-| reducible e2 env = (App e1 (fst $ reduce e2 env), env)-}
         | otherwise = (replace' e1 e2, env)
             where replace' (Lam name expr) e2 = replace expr name e2
-    reduce (Var name) env = (lookupInEnv name env, env)
+    reduceLazy (Var name) env = (lookupInEnv name env, env)
+
+    reducibleImmediately (App e1 e2) env = 
+        (reducibleImmediately e1 env) ||
+        (reducibleImmediately e2 env) ||
+        (callable e1)
+    reducibleImmediately (Var name) env = not (isBound name env) && inEnv name env
+    reducibleImmediately (Lam _ expr) env = reducibleImmediately expr env
+
+    reduceImmediately (App e1 e2) env 
+        | reducibleImmediately e1 env =
+            (App (fst $ reduceImmediately e1 env) e2, env)
+        | reducibleImmediately e2 env = 
+            (App e1 (fst $ reduceImmediately e2 env), env)
+        | otherwise = (replace' e1 e2, env)
+            where replace' (Lam name expr) e2 = replace expr name e2
+    reduceImmediately (Lam name expr) env = 
+        (Lam name (fst $ reduceImmediately expr (bound name env)), env)
+    reduceImmediately (Var name) env = (lookupInEnv name env, env)
 
 class Inspect a where
     inspect :: a -> String

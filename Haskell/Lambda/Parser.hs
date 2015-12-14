@@ -5,11 +5,13 @@ import Lambda
 import Text.Parsec
 import Text.Parsec.String
 
+id_char = ['0'..'9'] ++ ['a'..'z'] ++ ['A'..'Z'] ++ ['_']
+
 lambda :: Parser Expr
 lambda = do many (char ' ')
             char '\\' <|> char 'λ'
             many (char ' ')
-            var <- many1 letter
+            var <- many1 (oneOf id_char)
             many (char ' ')
             char '.'
             many (char ' ')
@@ -23,7 +25,7 @@ lambda = do many (char ' ')
 
 term :: Parser Expr
 term = do many (char ' ')
-          var <- many1 letter
+          var <- many1 (oneOf id_char)
           many (char ' ')
           return $ Var var 
    <|> do many (char ' ')
@@ -37,7 +39,7 @@ term = do many (char ' ')
 
 binding :: Parser Binding
 binding = do many (char ' ')
-             name <- many1 letter
+             name <- many1 (oneOf id_char)
              many (char ' ')
              char '='
              many (char ' ')

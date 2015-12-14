@@ -11,16 +11,18 @@ three = \f.\s.f (f (f s))
 five = add two three
 
 succ = \n.\f.\s.f (n f s)
-add = \n.\m.n succ m
-mult = \m.\n.n (add m)
+add = \m.\n.n succ m
+mult = \m.\n.m (add n) zero
 
-pred = \n.\f.\x. n (\g.\h. h (g f)) (\u. x) (\u. u)
+pred = λn.λf.λs.n(λg.λh.h(g f))(λu.s)(λu.u)
 
 isZero = \n.n (\x.false) true
 
 Y = \f.(\x.f (x x)) (\x.f (x x))
 
-fact = Y (\f.\n.if (isZero n) (one) (mult n (f (pred n))))
+id = \id.id
 
-main = id id
-id = \x.x
+fact = \n.if (isZero n) (one) (mult n (fact (pred n)))
+
+main = fact one
+

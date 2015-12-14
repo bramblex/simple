@@ -21,3 +21,6 @@ class StackClass t a where
 instance StackClass Stack a where
     fromList l = Stack l
     toList = unStack
+
+instance Functor Stack where
+    fmap f a = fromList . fmap f . toList $ a
