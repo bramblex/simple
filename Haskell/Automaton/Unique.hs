@@ -3,14 +3,14 @@
 module Unique (Unique, unUnique, newUnique, evalUnique)where
 import Control.Monad.State
 
-newtype Unique a = Unique {unUnique::(State [Int] a)}
-    deriving(Functor, Applicative, Monad, MonadState [Int])
-
-modifyAndGet :: MonadState s m => (s -> (a, s)) -> m a
-modifyAndGet f = state (\s -> f s)
+newtype Unique a = Unique {unUnique::(State Int a)}
+    deriving(Functor, Applicative, Monad, MonadState Int)
 
 newUnique :: Unique Int
-newUnique = modifyAndGet (\(x:xs)->(x, xs))
+newUnique = do
+    state <- get
+    modify (succ)
+    return state
 
 evalUnique :: Unique a -> a
-evalUnique = flip evalState [0..] . unUnique
+evalUnique = flip evalState 0 . unUnique

@@ -4,7 +4,7 @@ module FARule where
 import Data.List
 
 data Input a = Epsilon | Input a
-    deriving (Eq, Show, Read)
+    deriving (Eq, Read)
 
 instance Show a => Show (Input a) where
     show (Input a) = show a
